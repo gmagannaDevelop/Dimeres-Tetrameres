@@ -1,0 +1,101 @@
+---
+title: "Analyse d'interfaces homomériques"
+author: "Anthony Boutard, Gustavo Magaña López"
+date: "20/04/2021"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    extra_dependencies: ["amsmath"]
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    toc: yes
+    toc_depth: 3
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+here::i_am("notebooks/Rapport.Rmd")
+library(here)
+knitr::opts_chunk$set(echo = TRUE, results = F)
+```
+
+# Ceci est un test.
+
+```{r libs}
+library(phangorn)
+library(bio3d)
+library(reticulate)
+```
+
+
+```{python config}
+import sys
+proj_root_str = "/home/gml/Documents/Master/M1_BIBS/S2/DimerTetramer/"
+sys.path.append(proj_root_str)
+
+import Bio.PDB as pdb
+import freesasa
+import nglview as nv
+
+from dimertetramer.utils.customobjs import (
+    Path as path,
+    ObjDict as odict
+)
+```
+
+
+```{python aber}
+proj_root = path(proj_root_str)
+files = proj_root.here("assets").dglob("*")
+
+glob_dict = lambda x, y: { 
+    key.replace(f".{y}", ""): value 
+    for key, value in files[x].dglob(f"*.{y}").items()
+}
+
+dimer_files = glob_dict("Dimers", "pdb")
+tetramer_files = glob_dict("Tetramers", "pdb")
+interface_files = glob_dict("Dim_Tet_interfaces", "pdb")
+
+parse_pdb = (
+    lambda x: 
+    pdb
+    .PDBParser(QUIET=True)
+    .get_structure(id = x.name.replace(".pdb", ""), file = x.abs )
+) # x doit être un fichier de type piestruct.utils.customobjs.Path
+
+biop_dimers = odict({ 
+    name:  parse_pdb(location) 
+    for name, location in dimer_files.items()
+})
+figures = [nv.show_biopython(struct) for struct in biop_dimers.values()]
+```
+
+```{python la.verite}
+# it doesnt work, which does not surprise me
+figures[0]
+```
+
+```{r lets.see, echo=FALSE}
+dimer.ids <- sapply(
+  names(py$dimer_files),
+  function(x){ stringr::str_replace(x, "_Dim", "") },
+  USE.NAMES = F
+)
+dimer.ids
+
+get.seq(dimer.ids, outfile = "dimers.fasta", db = "pdb")
+```
+
+
+```{r lets.see}
+tetra.ids <- sapply(
+  names(py$tetramer_files),
+  function(x){ stringr::str_replace(x, "_Tet", "") },
+  USE.NAMES = F
+)
+tetra.ids
+
+get.seq(tetra.ids, outfile = "tetramers.fasta", db = "pdb")
+```
