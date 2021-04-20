@@ -2,8 +2,8 @@
 
 ####################### CUSTOM #########################################
 # intermediate builds :
-notebooks/*.html
-notebooks/*.pdf
+**/notebooks/*.html
+**/notebooks/*.pdf
 
 # benchmarks raw data
 metrics/raw_data
