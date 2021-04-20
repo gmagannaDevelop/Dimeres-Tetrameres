@@ -19,6 +19,8 @@ data
 **/*.bin
 **/*.desc
 
+# assets directory, provided by the Professors :
+assets
 
 ####################### END CUSTOM #####################################
 
