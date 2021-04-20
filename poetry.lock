@@ -915,6 +915,26 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "rpy2"
+version = "3.4.4"
+description = "Python interface to the R language (embedded R)"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+cffi = ">=1.10.0"
+jinja2 = "*"
+pytz = "*"
+tzlocal = "*"
+
+[package.extras]
+all = ["pandas", "numpy", "pytest"]
+numpy = ["pandas"]
+pandas = ["numpy", "pandas"]
+test = ["pytest"]
+
+[[package]]
 name = "send2trash"
 version = "1.5.0"
 description = "Send file to trash natively under Mac OS X, Windows and Linux."
@@ -1004,6 +1024,17 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "tzlocal"
+version = "2.1"
+description = "tzinfo object for the local timezone"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pytz = "*"
+
+[[package]]
 name = "wcwidth"
 version = "0.2.5"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -1041,7 +1072,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "ead40a799a31f810057cffc7729fb7bc925bfe5b073e2bc17b74eaec1b93f2ed"
+content-hash = "a1bf57a94af53a9ea9aff1eec795ee32de938da28b754430799d13ca4c0ce9c0"
 
 [metadata.files]
 appdirs = [
@@ -1669,6 +1700,12 @@ regex = [
     {file = "regex-2021.4.4-cp39-cp39-win_amd64.whl", hash = "sha256:97f29f57d5b84e73fbaf99ab3e26134e6687348e95ef6b48cfd2c06807005a07"},
     {file = "regex-2021.4.4.tar.gz", hash = "sha256:52ba3d3f9b942c49d7e4bc105bb28551c44065f139a65062ab7912bef10c9afb"},
 ]
+rpy2 = [
+    {file = "rpy2-3.4.4-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:1703191c98b0c8f2a6f5320e77ed52ba821a5fff3da0f2c73dd4b8456e9ac0c0"},
+    {file = "rpy2-3.4.4-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:9debe01e4f3ac5e6eac7d9c1881b10f72a0017f8cc682d11b87d7a534d4fc6df"},
+    {file = "rpy2-3.4.4-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:07037a03e3c9a154a49b27eff97ef9386952bb63e1152505723af4af3da8d4cb"},
+    {file = "rpy2-3.4.4.tar.gz", hash = "sha256:e198862701bfc6d3da4a2fcf18910d71521b385283abdb2121e07b874add8e50"},
+]
 send2trash = [
     {file = "Send2Trash-1.5.0-py3-none-any.whl", hash = "sha256:f1691922577b6fa12821234aeb57599d887c4900b9ca537948d2dac34aea888b"},
     {file = "Send2Trash-1.5.0.tar.gz", hash = "sha256:60001cc07d707fe247c94f74ca6ac0d3255aabcb930529690897ca2a39db28b2"},
@@ -1772,6 +1809,10 @@ typing-extensions = [
     {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},
     {file = "typing_extensions-3.7.4.3-py3-none-any.whl", hash = "sha256:7cb407020f00f7bfc3cb3e7881628838e69d8f3fcab2f64742a5e76b2f841918"},
     {file = "typing_extensions-3.7.4.3.tar.gz", hash = "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c"},
+]
+tzlocal = [
+    {file = "tzlocal-2.1-py2.py3-none-any.whl", hash = "sha256:e2cb6c6b5b604af38597403e9852872d7f534962ae2954c7f35efcb1ccacf4a4"},
+    {file = "tzlocal-2.1.tar.gz", hash = "sha256:643c97c5294aedc737780a49d9df30889321cbe1204eac2c2ec6134035a92e44"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},
