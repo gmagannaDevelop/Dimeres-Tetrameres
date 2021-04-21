@@ -10,6 +10,7 @@
 
 """
 
+from typing import Dict, Optional, Any
 
 from pathlib import (
     Path as _Path_,
@@ -96,6 +97,28 @@ class ObjDict(dict):
     @property
     def litems(self):
         return super().items()
+
+    def __depth(self, _dict):
+        """ private helper method to determine maximum depth of a dictionary """
+        if isinstance(_dict, dict):
+            return 1 + max(self.__depth(value) for value in _dict.values())
+        else:
+            return 0
+
+    def depth(self) -> int:
+        """ Determine the maximum depth, i.e. number of nested dictionaries contained in self """
+        return self.__depth(self)
+
+    def _keys_by_level(
+        self,
+        _dict: Optional[Dict[Any, Any]],
+        keys_dict: Optional[Dict[int, list]] = None,
+        level: int = 0,
+    ):
+        """ """
+        keys_dict = keys_dict or {}
+
+        keys_dict.update({level: list(_dict.keys())})
 
     def __getattr__(self, name):
         if name in self:
