@@ -6,6 +6,7 @@
     Course : Python applied to structural bioinformatics.
 """
 import math, string, sys
+from ..utils.customobjs import ObjDict
 
 
 def PDB_parser(infile):
@@ -23,7 +24,7 @@ def PDB_parser(infile):
 
     # var ini
     # ---------
-    dPDB = {}
+    dPDB = ObjDict({})
     atomlist = []
     dPDB["chains"] = []
 
@@ -38,7 +39,7 @@ def PDB_parser(infile):
             # si la chaine n'existe pas, on cree la cle correspondante et on ajoute la chaine a la liste des chaines
             if not chain in dPDB["chains"]:
                 dPDB["chains"].append(chain)  # ajout de "chain" a la liste des chaines
-                dPDB[chain] = {}  # creation du sous-dico pour la chaine
+                dPDB[chain] = ObjDict({})  # creation du sous-dico pour la chaine
                 # on prepare la structure de donnees pour cette chaine
                 dPDB[chain]["reslist"] = []
 
@@ -48,7 +49,7 @@ def PDB_parser(infile):
             # si le residu pour cette chaine "chain" n'existe pas, on cree la cle correspondante et on ajoute le res a la liste des res
             if not curres in dPDB[chain]["reslist"]:
                 dPDB[chain]["reslist"].append(curres)
-                dPDB[chain][curres] = {}
+                dPDB[chain][curres] = ObjDict({})
                 # on prepare la structure de donnees pour ce residu
                 dPDB[chain][curres]["atomlist"] = []
                 # on recupere l'info du residu
@@ -57,7 +58,7 @@ def PDB_parser(infile):
             # on recupere les info pour l'atome de ce res de cette chaine (type atomique + coords x, y, z)
             atomtype = line[12:16].strip()
             dPDB[chain][curres]["atomlist"].append(atomtype)
-            dPDB[chain][curres][atomtype] = {}
+            dPDB[chain][curres][atomtype] = ObjDict({})
             dPDB[chain][curres][atomtype]["x"] = float(line[30:38])
             dPDB[chain][curres][atomtype]["y"] = float(line[38:46])
             dPDB[chain][curres][atomtype]["z"] = float(line[46:54])
