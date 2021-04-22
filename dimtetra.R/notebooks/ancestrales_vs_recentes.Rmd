@@ -1,5 +1,5 @@
 ---
-title: "Analyse Comparative des Surface"
+title: "Analyse Comparative des Surfaces"
 author: "Anthony Boutard, Gustavo Magaña López"
 date: "21/04/2021"
 output: 
@@ -20,8 +20,9 @@ library(here)
 library(foreach)
 library(iterators)
 library(ggplot2)
+library(dplyr)
 library(magrittr)
-knitr::opts_chunk$set(echo = T)
+knitr::opts_chunk$set(echo = F, warning = F, message = F)
 ```
 
 ```{r read_files, message=F}
@@ -64,4 +65,29 @@ interfaces <-
 type.counts.ls <- interfaces %>% purrr::map(~ dplyr::count(.x, type))
 type.counts.df <- bind_rows(type.counts.ls, .id = "protein")
 ```
+
+
+```{r counts}
+type.proportions.df <- type.counts.df %>% 
+  with_groups(c(protein), mutate, np = n / sum(n)) %>% 
+  mutate(
+    type = case_when(
+      type == 0 ~ "surface",
+      type == 1 ~ "ancestral",
+      type == 2 ~ "recent"
+    )
+  ) %>% rename(size = np) 
+```
+
+```{r interfaces.ancestrales}
+type.proportions.df %>% 
+    ggplot(aes(x=size,  colour=type)) + 
+      geom_histogram(
+        aes(y = after_stat(density)), fill="white",
+      ) +
+        geom_density(aes(fill = type), alpha=.2) + 
+    ggtitle("Distribution des tailles relatives selon le type")
+```
+
+
 
