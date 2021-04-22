@@ -18,11 +18,15 @@ output:
 here::i_am("notebooks/ancestrales_vs_recentes.Rmd")
 library(here)
 library(foreach)
+library(parallel)
 library(iterators)
 library(ggplot2)
 library(dplyr)
 library(stringr)
 library(magrittr)
+library(caret)
+library(MLeval)
+source(here("src/pretty_tables.R"))
 knitr::opts_chunk$set(echo = F, warning = F, message = F, cache = T)
 ```
 
@@ -47,17 +51,12 @@ csv_interfaces <-
   list.files(.interface_dir, pattern = "*.csv", full.names = T)
 
 names(csv_interfaces) <- 
-  purrr::map_chr(
-    list.files(.interface_dir, pattern = "*.csv"), 
-    ~ stringr::str_replace(.x, pattern = "_inter.csv", "")
-  )
+  list.files(.interface_dir, pattern = "*.csv") %>% 
+  purrr::map_chr(~ stringr::str_replace(.x, pattern = "_inter.csv", ""))
 
 interfaces <-
-  purrr::map(
-    csv_interfaces,
-    ~ readr::read_csv(.x, col_names = F)
-  ) %>% 
-    purrr::map(~ clean_df(.x))
+  csv_interfaces %>% purrr::map(~ readr::read_csv(.x, col_names = F)) %>% 
+  purrr::map(~ clean_df(.x))
 
 ```
 
@@ -179,11 +178,60 @@ recent.cov.df <- metrics %>% select(contains("interface2")) %>%
   rename_all(~ str_trim(str_remove_all(.x, "interface2"))) %>% 
     mutate(interface = "recent") %>% select(interface, everything())
 
-annotated.reg.df <- rbind(ancestral.cov.df, recent.cov.df)
+annotated.reg.df <- rbind(ancestral.cov.df, recent.cov.df) %>% 
+  mutate(interface = factor(interface)) %>% 
+    rename(size = `relative size`)
 ```
 
+`r annotated.reg.df %>% select(-interface) %>%  describe() %>%   knitr::kable()`
 
-```{r le.plot}
+
+```{r le.plot, eval=F}
 GGally::ggpairs(annotated.reg.df, aes(colour=interface))
 ```
 
+```{r regression}
+# regression naive
+m1.glm <- glm(interface ~ ., data = annotated.reg.df, family = binomial)
+summary(m1.glm)
+```
+
+```{r k.fold.explore, eval=F, echo=F, include=F}
+# verify if folds are correctly balanced.
+tryfold <- createFolds(annotated.reg.df$interface, k = 3)
+#tryfold <- createFolds(annotated.reg.df$interface, k = 3, returnTrain = T)
+
+annotated.reg.df %>% mutate(i = 1:n()) %>% 
+   filter(i %in% tryfold$Fold2) %>% 
+    group_by(interface) %>% summarise(counts = n())
+```
+
+
+```{r regression.cv}
+
+# define training control
+train_control <- trainControl(
+  method = "cv", 
+  number = 3,
+  classProbs = T,
+  savePredictions = T,
+  summaryFunction = twoClassSummary
+)
+
+# train the model on training set
+model <- train(
+  interface ~ ., data = annotated.reg.df,
+  trControl = train_control,
+  method = "glm", family=binomial(),
+  metric = "ROC"
+)
+
+## print cv scores
+#print(model)
+#
+#
+#res <- evalm(model)
+#
+### get ROC
+#res$roc
+```
