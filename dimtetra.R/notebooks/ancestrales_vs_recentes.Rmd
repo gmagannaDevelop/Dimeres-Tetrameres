@@ -21,8 +21,9 @@ library(foreach)
 library(iterators)
 library(ggplot2)
 library(dplyr)
+library(stringr)
 library(magrittr)
-knitr::opts_chunk$set(echo = F, warning = F, message = F)
+knitr::opts_chunk$set(echo = F, warning = F, message = F, cache = T)
 ```
 
 ```{r read_files, message=F}
@@ -143,3 +144,41 @@ interface1.dimeric <- ancestral.surface.df %>%
   filter(protein_type == "dimer") %>% select(size) %>% unlist(use.names = F)
 t.test(interface1.dimeric, interface1.tetrameric)
 ```
+
+```{r newdata}
+metrics <- readr::read_csv(here("assets/tetrametic_metrics.csv"))
+```
+
+```{r consurf}
+consurf <- metrics %>% select(starts_with("consurf")) %>% 
+  rename(
+    interface1 = `consurf interface1`, 
+    interface2 = `consurf interface2`, 
+  ) %>% 
+  reshape2::melt() %>% rename(Interface = variable, `Consurf score` = value) %>% 
+  mutate(
+    Interface = case_when(
+      Interface == "interface1" ~ "ancestral",
+      Interface == "interface2" ~ "recent"
+    )
+  )
+
+consurf %>%
+    ggplot(aes(y=`Consurf score`, x=Interface, colour=Interface)) + 
+    geom_boxplot() +
+    ggtitle("Score Consurf par type d'interface")
+```
+
+
+```{r separate.annotate.join}
+ancestral.cov.df <- metrics %>% select(contains("interface1")) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "interface1"))) %>% 
+    mutate(interface = "ancestral") %>% select(interface, everything())
+
+recent.cov.df <- metrics %>% select(contains("interface2")) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "interface2"))) %>% 
+    mutate(interface = "recent") %>% select(interface, everything())
+
+annotated.reg.df <- rbind(ancestral.cov.df, recent.cov.df)
+```
+
