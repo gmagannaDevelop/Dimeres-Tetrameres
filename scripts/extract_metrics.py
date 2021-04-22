@@ -150,15 +150,34 @@ prop_not_interface = [i[1] / i[0] for i in list_taille_nombre_residus]
 prop_interface1 = [i[2] / i[0] for i in list_taille_nombre_residus]
 prop_interface2 = [i[3] / i[0] for i in list_taille_nombre_residus]
 
-# len(dSASA["reslist"]),
-# len(dSASA["notInterfaceRes"]),
-# len(dSASA["interfaceRes1"]),
-# len(dSASA["interfaceRes2"]),
+SASA_total = [sasas[0] for sasas in list_taille_SASA]
+SASA_interface1 = [sasas[1] for sasas in list_taille_SASA]
+SASA_interface2 = [sasas[2] for sasas in list_taille_SASA]
 
 lists = {
     i: eval(i) for i in dir() if isinstance(eval(i), list) and not i.startswith("_")
 }
 
-# metrics: pd.DataFrame = pd.DataFrame({
-#   "consurf interface"
-# }, index=tetramer_names)
+metrics: pd.DataFrame = pd.DataFrame(
+    {
+        "SASA total": SASA_total,
+        "SASA interface1": SASA_interface1,
+        "SASA interface2": SASA_interface2,
+        "consurf interface1": mean_consurf_interface1,
+        "consurf interface2": mean_consurf_interface2,
+        "relative size not interface": prop_not_interface,
+        "relative size interface1": prop_interface1,
+        "relative size interface2": prop_interface2,
+        "surface hydrophobic": surface_HP,
+        "surface polar": surface_POL,
+        "surface charged": surface_CHG,
+        "interface1 hydrophobic": interface1_HP,
+        "interface1 polar": interface1_POL,
+        "interface1 charged": interface1_CHG,
+        "interface2 hydrophobic": interface2_HP,
+        "interface2 polar": interface2_POL,
+        "interface2 charged": interface2_CHG,
+    },
+    index=tetramer_names,
+)
+metrics.index.name = "protein"
