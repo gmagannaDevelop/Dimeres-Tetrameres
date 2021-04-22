@@ -88,11 +88,11 @@ class ObjDict(dict):
 
     @property
     def lkeys(self):
-        return super().keys()
+        return list(super().keys())
 
     @property
     def lvalues(self):
-        return super().values()
+        return list(super().values())
 
     @property
     def litems(self):
@@ -109,16 +109,19 @@ class ObjDict(dict):
         """ Determine the maximum depth, i.e. number of nested dictionaries contained in self """
         return self.__depth(self)
 
-    def _keys_by_level(
+    def __keys_by_level(
         self,
         _dict: Optional[Dict[Any, Any]],
         keys_dict: Optional[Dict[int, list]] = None,
         level: int = 0,
     ):
         """ """
-        keys_dict = keys_dict or {}
+        # keys_dict = keys_dict or {}
 
-        keys_dict.update({level: list(_dict.keys())})
+        # keys_dict.update({level: list(_dict.keys())})
+        # for value in _dict.values():
+        #    if isinstance(value, dict):
+        #        self._keys_by_level(value, keys_dict, level=level + 1)
 
     def __getattr__(self, name):
         if name in self:
