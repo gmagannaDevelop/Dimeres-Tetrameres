@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+import pandas as pd
 
 from dimertetramer.parsing.pdb import PDB_parser, pdb_to_csv
 from dimertetramer.utils.customobjs import Path as path, ObjDict as odict
@@ -38,7 +38,7 @@ list_frequence_types = []
 mean_consurf_interface1 = []
 mean_consurf_interface2 = []
 
-proj_root = path(".")
+proj_root = path("..")
 assets = proj_root.here("assets").dglob("*")
 dimers = assets["Dimers"].dglob("*.pdb")
 tetramers = assets["Tetramers"].dglob("*.pdb")
@@ -46,11 +46,11 @@ interfaces = assets["Dim_Tet_interfaces"].dglob("*.pdb")
 
 for tetramere in tetramer_names:
 
-    tetramer_file = f"assets/Dim_Tet_interfaces/{tetramere}_inter.pdb"
+    tetramer_file = f"../assets/Dim_Tet_interfaces/{tetramere}_inter.pdb"
     print(tetramere)
     dSASA = PDBTools.SASA_parser(tetramer_file)
 
-    consurf_file = f"assets/Consurf/{tetramere}_Tet_pdb_With_Conservation_Scores.pdb"
+    consurf_file = f"../assets/Consurf/{tetramere}_Tet_pdb_With_Conservation_Scores.pdb"
 
     with open(consurf_file, "r") as f:
         lines = f.readlines()
@@ -108,15 +108,15 @@ for tetramere in tetramer_names:
 
     list_frequence_types.append(
         [
-            HP_surface,
-            HP_interface1,
-            HP_interface2,
-            POL_surface,
-            POL_interface1,
-            POL_interface2,
-            CHG_surface,
-            CHG_interface1,
-            CHG_interface2,
+            HP_surface / len(dSASA["surfaceRes"]),
+            HP_interface1 / len(dSASA["interfaceRes1"]),
+            HP_interface2 / len(dSASA["interfaceRes2"]),
+            POL_surface / len(dSASA["surfaceRes"]),
+            POL_interface1 / len(dSASA["interfaceRes1"]),
+            POL_interface2 / len(dSASA["interfaceRes2"]),
+            CHG_surface / len(dSASA["surfaceRes"]),
+            CHG_interface1 / len(dSASA["interfaceRes1"]),
+            CHG_interface2 / len(dSASA["interfaceRes2"]),
         ]
     )
 
@@ -135,3 +135,30 @@ for tetramere in tetramer_names:
     mean_consurf_interface2.append(
         sum(list_consurf_interface2) / len(list_consurf_interface2)
     )
+
+surface_HP = HP_surface = [i[0] for i in list_frequence_types]
+interface1_HP = HP_interface1 = [i[1] for i in list_frequence_types]
+interface2_HP = HP_interface2 = [i[2] for i in list_frequence_types]
+surface_POL = POL_surface = [i[3] for i in list_frequence_types]
+interface1_POL = POL_interface1 = [i[4] for i in list_frequence_types]
+interface2_POL = POL_interface2 = [i[5] for i in list_frequence_types]
+surface_CHG = CHG_surface = [i[6] for i in list_frequence_types]
+interface1_CHG = CHG_interface1 = [i[7] for i in list_frequence_types]
+interface2_CHG = CHG_interface2 = [i[8] for i in list_frequence_types]
+
+prop_not_interface = [i[1] / i[0] for i in list_taille_nombre_residus]
+prop_interface1 = [i[2] / i[0] for i in list_taille_nombre_residus]
+prop_interface2 = [i[3] / i[0] for i in list_taille_nombre_residus]
+
+# len(dSASA["reslist"]),
+# len(dSASA["notInterfaceRes"]),
+# len(dSASA["interfaceRes1"]),
+# len(dSASA["interfaceRes2"]),
+
+lists = {
+    i: eval(i) for i in dir() if isinstance(eval(i), list) and not i.startswith("_")
+}
+
+# metrics: pd.DataFrame = pd.DataFrame({
+#   "consurf interface"
+# }, index=tetramer_names)
