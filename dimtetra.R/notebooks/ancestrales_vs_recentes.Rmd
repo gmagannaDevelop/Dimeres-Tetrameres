@@ -204,6 +204,8 @@ tryfold <- createFolds(annotated.reg.df$interface, k = 3)
 annotated.reg.df %>% mutate(i = 1:n()) %>% 
    filter(i %in% tryfold$Fold2) %>% 
     group_by(interface) %>% summarise(counts = n())
+
+# TODO : implement cross-validation myself.
 ```
 
 
@@ -223,11 +225,26 @@ model <- train(
   interface ~ ., data = annotated.reg.df,
   trControl = train_control,
   method = "glm", family=binomial(),
+  metric = "Accuracy"
+)
+
+model2 <- train(
+  interface ~ ., data = annotated.reg.df,
+  trControl = train_control,
+  method = "glm", family=binomial(),
+  metric = "Kappa"
+)
+
+model3 <- train(
+  interface ~ ., data = annotated.reg.df,
+  trControl = train_control,
+  method = "glm", family=binomial(),
   metric = "ROC"
 )
 
+
 ## print cv scores
-#print(model)
+print(model)
 #
 #
 #res <- evalm(model)
