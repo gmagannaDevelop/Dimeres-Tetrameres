@@ -3,6 +3,7 @@ import pathlib
 import Bio.PDB as pdb
 import freesasa
 
+from ..utils.customobjs import ObjDict
 
 from typing import (
     Dict,
@@ -39,7 +40,7 @@ def sasa_from_file(file: Union[str, pathlib.Path]) -> Sasa:
     _struct = freesasa.Structure(file.absolute().as_posix())
     _sasa = freesasa.calc(_struct)
 
-    return _sasa.residueAreas()
+    return ObjDict(_sasa.residueAreas())
 
 
 def delta_r_sasa(monomer: Sasa, complex: Sasa, chain: str, residue: str):
