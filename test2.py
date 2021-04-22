@@ -1,11 +1,11 @@
-from dimertetramer.parsing.pdb import PDB_parser, pdb_to_csv
-from dimertetramer.utils.customobjs import Path as path, ObjDict as odict
-
-# from dimertetramer.calculations.theo import *
-from dimertetramer.calculations import misc as PDBTools
 import matplotlib.pyplot as plt
 
-list_tetramere = [
+from dimertetramer.parsing.pdb import PDB_parser, pdb_to_csv
+from dimertetramer.utils.customobjs import Path as path, ObjDict as odict
+from dimertetramer.calculations import misc as PDBTools
+from dimertetramer.calculations.constants import AminoAcids as aa
+
+tetramer_names = [
     "1non",
     "1t2a",
     "3mds",
@@ -33,10 +33,6 @@ list_taille_nombre_residus = []
 list_taille_SASA = []
 list_frequence_types = []
 
-HP = ["ALA", "CYS", "PHE", "ILE", "LEU", "MET", "VAL", "TRP", "TYR"]  # hydrophobe
-POL = ["ASN", "GLN", "SER", "THR"]  # polaire
-CHG = ["ASP", "GLU", "HIS", "LYS", "ARG"]  # chargé
-
 # Note : la proline et la glycine sont considerees comme des cas a part.
 
 mean_consurf_interface1 = []
@@ -48,23 +44,19 @@ dimers = assets["Dimers"].dglob("*.pdb")
 tetramers = assets["Tetramers"].dglob("*.pdb")
 interfaces = assets["Dim_Tet_interfaces"].dglob("*.pdb")
 
-for tetramere in list_tetramere:
+for tetramere in tetramer_names:
 
-    infile = "assets/Dim_Tet_interfaces/{:s}_inter.pdb".format(tetramere)
+    tetramer_file = f"assets/Dim_Tet_interfaces/{tetramere}_inter.pdb"
     print(tetramere)
-    dSASA = PDBTools.SASA_parser(infile)
+    dSASA = PDBTools.SASA_parser(tetramer_file)
 
-    infile = "assets/Consurf/{:s}_Tet_pdb_With_Conservation_Scores.pdb".format(
-        tetramere
-    )
+    consurf_file = f"assets/Consurf/{tetramere}_Tet_pdb_With_Conservation_Scores.pdb"
 
-    f = open(infile, "r")
-    lines = f.readlines()
-    f.close()
+    with open(consurf_file, "r") as f:
+        lines = f.readlines()
 
     for line in lines:
         if line[0:4] == "ATOM" and line[60:67].strip() != "":
-
             curres = "{:s}".format(line[22:26]).strip()
             dSASA[curres]["consurf"] = float(line[60:67].strip())
 
@@ -90,28 +82,28 @@ for tetramere in list_tetramere:
     CHG_interface1 = 0
     CHG_interface2 = 0
 
-    for resid in dSASA["surfaceRes"]:
-        if dSASA[resid]["resname"] in HP:
+    for residue in dSASA["surfaceRes"]:
+        if dSASA[residue]["resname"] in aa.hydrophobic:
             HP_surface += 1
-        elif dSASA[resid]["resname"] in POL:
+        elif dSASA[residue]["resname"] in aa.polar:
             POL_surface += 1
-        elif dSASA[resid]["resname"] in CHG:
+        elif dSASA[residue]["resname"] in aa.charged:
             CHG_surface += 1
 
-    for resid in dSASA["interfaceRes1"]:
-        if dSASA[resid]["resname"] in HP:
+    for residue in dSASA["interfaceRes1"]:
+        if dSASA[residue]["resname"] in aa.hydrophobic:
             HP_interface1 += 1
-        elif dSASA[resid]["resname"] in POL:
+        elif dSASA[residue]["resname"] in aa.polar:
             POL_interface1 += 1
-        elif dSASA[resid]["resname"] in CHG:
+        elif dSASA[residue]["resname"] in aa.charged:
             CHG_interface1 += 1
 
-    for resid in dSASA["interfaceRes2"]:
-        if dSASA[resid]["resname"] in HP:
+    for residue in dSASA["interfaceRes2"]:
+        if dSASA[residue]["resname"] in aa.hydrophobic:
             HP_interface2 += 1
-        elif dSASA[resid]["resname"] in POL:
+        elif dSASA[residue]["resname"] in aa.polar:
             POL_interface2 += 1
-        elif dSASA[resid]["resname"] in CHG:
+        elif dSASA[residue]["resname"] in aa.charged:
             CHG_interface2 += 1
 
     list_frequence_types.append(
@@ -131,11 +123,11 @@ for tetramere in list_tetramere:
     list_consurf_interface1 = []
     list_consurf_interface2 = []
 
-    for resid in dSASA["interfaceRes1"]:
-        list_consurf_interface1.append(dSASA[resid]["consurf"])
+    for residue in dSASA["interfaceRes1"]:
+        list_consurf_interface1.append(dSASA[residue]["consurf"])
 
-    for resid in dSASA["interfaceRes2"]:
-        list_consurf_interface2.append(dSASA[resid]["consurf"])
+    for residue in dSASA["interfaceRes2"]:
+        list_consurf_interface2.append(dSASA[residue]["consurf"])
 
     mean_consurf_interface1.append(
         sum(list_consurf_interface1) / len(list_consurf_interface1)
