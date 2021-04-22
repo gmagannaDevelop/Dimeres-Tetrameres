@@ -79,7 +79,7 @@ type.proportions.df <- type.counts.df %>%
   ) %>% rename(size = np) 
 ```
 
-```{r interfaces.ancestrales}
+```{r histograms.by.type}
 type.proportions.df %>% 
     ggplot(aes(x=size,  colour=type)) + 
       geom_histogram(
@@ -90,4 +90,9 @@ type.proportions.df %>%
 ```
 
 
+```{r histograms.by.type}
+type.proportions.df %>% 
+    ggplot(aes(y=size, x=type, colour=type)) + geom_boxplot() +
+    ggtitle("Distribution des tailles relatives selon le type")
+```
 
