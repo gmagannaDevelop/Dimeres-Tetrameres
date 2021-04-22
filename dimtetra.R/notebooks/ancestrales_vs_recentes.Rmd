@@ -1,0 +1,67 @@
+---
+title: "Analyse Comparative des Surface"
+author: "Anthony Boutard, Gustavo Magaña López"
+date: "21/04/2021"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    extra_dependencies: ["amsmath"]
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    toc: yes
+    toc_depth: 3
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+here::i_am("notebooks/ancestrales_vs_recentes.Rmd")
+library(here)
+library(foreach)
+library(iterators)
+library(ggplot2)
+library(magrittr)
+knitr::opts_chunk$set(echo = T)
+```
+
+```{r read_files, message=F}
+# Create a list of files to be read 
+clean_df <- function(df){
+  df %>% dplyr::select(-X1, -X5, -X7, -X8, -X9, -X10, -X12, -X13) %>% 
+    dplyr::rename(
+      `atom number` = X2,
+      atom = X3,
+      residue = X4,
+      `residue number` = X6,
+      type = X11
+    ) %>% 
+      group_by(`residue number`) %>% 
+        summarise(residue = unique(residue), type = unique(type))
+}
+
+.interface_dir <- here("assets/Dim_Tet_interfaces")
+
+csv_interfaces <- 
+  list.files(.interface_dir, pattern = "*.csv", full.names = T)
+
+names(csv_interfaces) <- 
+  purrr::map_chr(
+    list.files(.interface_dir, pattern = "*.csv"), 
+    ~ stringr::str_replace(.x, pattern = "_inter.csv", "")
+  )
+
+interfaces <-
+  purrr::map(
+    csv_interfaces,
+    ~ readr::read_csv(.x, col_names = F)
+  ) %>% 
+    purrr::map(~ clean_df(.x))
+
+```
+
+
+```{r func.def}
+type.counts.ls <- interfaces %>% purrr::map(~ dplyr::count(.x, type))
+type.counts.df <- bind_rows(type.counts.ls, .id = "protein")
+```
+
