@@ -6,7 +6,23 @@
     Course : Python applied to structural bioinformatics.
 """
 import math, string, sys
+
+import pathlib
+
 from ..utils.customobjs import ObjDict
+
+from typing import (
+    Dict,
+    List,
+    Tuple,
+    NoReturn,
+    Union,
+    Optional,
+    Any,
+    Callable,
+    Iterable,
+    Type,
+)
 
 
 def PDB_parser(infile):
@@ -112,3 +128,27 @@ def writePDB(dPDB, filout="out.pdb", bfactor=False):
                     )
 
     fout.close()
+
+
+def pdb_to_csv(file: Union[str, pathlib.Path], colum_names: Optional[List[str]] = None):
+    """ """
+    file = file.absolute().to_posix() if isinstance(file, pathlib.Path) else file
+    if not isinstance(file, str):
+        raise TypeError(f"Argument file has invalid type")
+
+    # Read pdb file, line by line
+    with open(file, "r") as f:
+        pdb_lines = f.readlines()
+
+    # divide on whitespace and rejoin on using commas
+    csv_lines = [",".join(line.split()) for line in pdb_lines]
+
+    # rewrite as csv
+    out_file = file.replace(".pdb", "") + ".csv"
+
+    with open(out_file, "w") as f:
+        if colum_names:
+            _header = ",".join(colum_names)
+            f.write(f"{_header}\n")
+        for line in csv_lines:
+            f.write(f"{line}\n")
