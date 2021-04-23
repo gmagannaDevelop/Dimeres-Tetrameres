@@ -212,6 +212,13 @@
       "Repository": "CRAN",
       "Hash": "a0cbe758a531d054b537d16dff4d58a1"
     },
+    "doRNG": {
+      "Package": "doRNG",
+      "Version": "1.8.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a32487a942bdf5fd34224ad46f786e67"
+    },
     "dplyr": {
       "Package": "dplyr",
       "Version": "1.0.5",
@@ -680,6 +687,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "edbf4cb1aefae783fd8d3a008ae51943"
+    },
+    "rngtools": {
+      "Package": "rngtools",
+      "Version": "1.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "ee3ca1cacd13e35dbb71ac1999d98cbc"
     },
     "rpart": {
       "Package": "rpart",
