@@ -173,7 +173,7 @@ aa.tbl <- rbind(aa.ancestral, aa.recent, aa.surface) %>%
 ```
 
 ```{r aa.comp.vis}
-aa.tbl %>% select(-protein) %>% melt() %>% 
+aa.tbl %>% select(-protein) %>% reshape2::melt() %>% 
   rename(AA = variable, counts = value) %>% 
   ggplot() +
     geom_col(
