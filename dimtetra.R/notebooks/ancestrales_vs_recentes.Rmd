@@ -185,6 +185,13 @@ annotated.reg.df <- rbind(ancestral.cov.df, recent.cov.df) %>%
 
 `r annotated.reg.df %>% select(-interface) %>%  describe() %>%   knitr::kable()`
 
+```{r aa.composition}
+annotated.reg.df %>% select(interface, hydrophobic, polar, charged) %>% 
+  reshape2::melt() %>% rename(`AA type` = variable, proportion = value) %>% 
+    ggplot(aes(x=`AA type`, y=proportion, colour=interface)) +
+      geom_boxplot()
+```
+
 
 ```{r le.plot, eval=F}
 GGally::ggpairs(annotated.reg.df, aes(colour=interface))
