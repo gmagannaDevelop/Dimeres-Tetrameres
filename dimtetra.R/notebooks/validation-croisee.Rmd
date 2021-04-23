@@ -1,0 +1,81 @@
+---
+title: "Validation croisée"
+author: "Anthony Boutard, Gustavo Magaña López"
+date: "23/04/2021"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    extra_dependencies: ["amsmath"]
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    toc: yes
+    toc_depth: 3
+    df_print: paged
+---
+  
+```{r setup, include=FALSE}
+here::i_am("notebooks/validation-croisee.Rmd")
+library(here)
+library(foreach)
+library(parallel)
+library(doRNG)
+library(iterators)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(magrittr)
+library(caret)
+library(MLeval)
+source(here("src/pretty_tables.R"))
+knitr::opts_chunk$set(cache = F, message = F, tidy = T)
+```
+
+# Data input / wrangling
+
+```{r data.input}
+metrics <- readr::read_csv(here("assets/tetrametic_metrics.csv"))
+
+ancestral.cov.df <- metrics %>% select(contains("interface1"), protein) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "interface1"))) %>% 
+    mutate(interface = "ancestral") %>% select(interface, everything())
+
+recent.cov.df <- metrics %>% select(contains("interface2"), protein) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "interface2"))) %>% 
+    mutate(interface = "recent") %>% select(interface, everything())
+
+annotated.df <- rbind(ancestral.cov.df, recent.cov.df) %>% 
+  mutate(interface = factor(interface)) %>% 
+    rename(size = `relative size`) %>% 
+      select(interface, protein, everything())
+
+annotated.reg.df <- annotated.df %>% select(-protein)
+```
+
+`r annotated.df %>% head() %>% knitr::kable(caption="First lines of regression DataFrame")`
+
+
+\newpage
+
+# `createFolds` function validation
+
+```{r folds.validation}
+# verify if folds are correctly balanced.
+tryfold <- createFolds(annotated.reg.df$interface, k = 5)
+#tryfold <- createFolds(annotated.reg.df$interface, k = 3, returnTrain = T)
+
+balance.on.test <- foreach(
+  fold = iter(tryfold), j = 1:length(tryfold), .combine = rbind
+) %do% {
+  annotated.reg.df %>% mutate(i = 1:n()) %>% 
+    filter(i %in% tryfold$Fold2) %>% 
+      group_by(interface) %>% summarise(counts = n()) %>% 
+        mutate(nfold = j) %>% select(nfold, everything())
+}
+
+```
+
+`r balance.on.test %>% knitr::kable(caption="Glance at test folds")`
+
+
+
