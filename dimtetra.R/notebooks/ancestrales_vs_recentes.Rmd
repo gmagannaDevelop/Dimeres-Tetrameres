@@ -141,7 +141,8 @@ interface1.tetrameric <- ancestral.surface.df %>%
   filter(protein_type == "tetramer") %>% select(size) %>% unlist(use.names = F)
 interface1.dimeric <- ancestral.surface.df %>% 
   filter(protein_type == "dimer") %>% select(size) %>% unlist(use.names = F)
-t.test(interface1.dimeric, interface1.tetrameric)
+
+t.test(interface1.dimeric, interface1.tetrameric, paired = T)
 ```
 
 ```{r newdata}
@@ -190,7 +191,8 @@ consurf.ancestral <- consurf %>% filter(Interface == "ancestral") %>%
   select(`Consurf score`) %>% unlist(use.names = F)
 consurf.recent <- consurf %>% filter(Interface == "recent") %>% 
   select(`Consurf score`) %>% unlist(use.names = F)
-t.test(consurf.recent, consurf.ancestral)
+
+t.test(consurf.recent, consurf.ancestral, paired = T)
 ```
 
 
