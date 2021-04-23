@@ -73,6 +73,10 @@ balance.on.test <- foreach(
         mutate(nfold = j) %>% select(nfold, everything())
 }
 
+
+registerDoRNG(seed = 1234)
+
+
 ```
 
 `r balance.on.test %>% knitr::kable(caption="Glance at test folds")`

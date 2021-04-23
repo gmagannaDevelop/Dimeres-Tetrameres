@@ -1,0 +1,145 @@
+---
+title: "Statistiques sur les types d'interface"
+author: "Anthony Boutard, Gustavo Magaña López"
+date: "21/04/2021"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+    extra_dependencies: ["amsmath"]
+    toc: yes
+    toc_depth: '3'
+  html_document:
+    toc: yes
+    toc_depth: 3
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+here::i_am("notebooks/statistics.Rmd")
+library(here)
+library(foreach)
+library(iterators)
+library(ggplot2)
+library(dplyr)
+library(magrittr)
+knitr::opts_chunk$set(echo = F, warning = F, message = F)
+```
+
+```{r read_files, message=F}
+# Create a list of files to be read 
+clean_df <- function(df){
+  df %>% dplyr::select(-X1, -X5, -X7, -X8, -X9, -X10, -X12, -X13) %>% 
+    dplyr::rename(
+      `atom number` = X2,
+      atom = X3,
+      residue = X4,
+      `residue number` = X6,
+      type = X11
+    ) %>% 
+      group_by(`residue number`) %>% 
+        summarise(residue = unique(residue), type = unique(type))
+}
+
+.interface_dir <- here("assets/Dim_Tet_interfaces")
+
+csv_interfaces <- 
+  list.files(.interface_dir, pattern = "*.csv", full.names = T)
+
+names(csv_interfaces) <- 
+  purrr::map_chr(
+    list.files(.interface_dir, pattern = "*.csv"), 
+    ~ stringr::str_replace(.x, pattern = "_inter.csv", "")
+  )
+
+interfaces <-
+  purrr::map(
+    csv_interfaces,
+    ~ readr::read_csv(.x, col_names = F)
+  ) %>% 
+    purrr::map(~ clean_df(.x))
+
+```
+
+
+```{r func.def}
+type.counts.ls <- interfaces %>% purrr::map(~ dplyr::count(.x, type))
+type.counts.df <- bind_rows(type.counts.ls, .id = "protein")
+```
+
+
+```{r pooled.counts}
+type.proportions.df <- type.counts.df %>% 
+  with_groups(c(protein), mutate, np = n / sum(n)) %>% 
+  mutate(
+    type = case_when(
+      type == 0 ~ "non-interface",
+      type == 1 ~ "ancestral",
+      type == 2 ~ "recent"
+    )
+  ) %>% rename(size = np) 
+```
+
+```{r discriminator}
+homomers <- type.proportions.df %>% group_by(protein) %>% 
+  summarise(ntype = length(unique(type)))
+
+dimers.names <- homomers %>% filter(ntype == 2) %>% 
+  select(protein) %>% unlist(use.names = F)
+
+tetramers.names <- homomers %>% filter(ntype == 3) %>%
+  select(protein) %>% unlist(use.names = F)
+
+dimers <- type.proportions.df %>% filter(protein %in% dimers.names)
+tetramers <- type.proportions.df %>% filter(protein %in% tetramers.names)
+```
+
+
+```{r densities.by.type}
+tetramers %>% 
+    ggplot(aes(x=size,  colour=type)) + 
+      geom_histogram(
+        aes(y = after_stat(density)), fill="white",
+      ) +
+        geom_density(aes(fill = type), alpha=.2) + 
+    ggtitle("Distribution des tailles relatives selon le type")
+```
+
+
+```{r histograms.by.type}
+tetramers %>% 
+    ggplot(aes(y=size, x=type, colour=type)) + geom_boxplot() +
+    ggtitle("Distribution des tailles relatives selon le type")
+```
+
+```{r ancestral.size}
+ancestral.surface.df <- type.proportions.df %>% filter(type == "ancestral") %>% 
+  mutate(
+    protein_type = case_when(
+      protein %in% dimers.names ~ "dimer",
+      protein %in% tetramers.names ~ "tetramer"
+    )
+  ) 
+
+ancestral.surface.df %>% 
+  ggplot(aes(x=size,  colour=protein_type)) + 
+      geom_histogram(
+        aes(y = after_stat(density)), fill="white",
+      ) +
+        geom_density(aes(fill = protein_type), alpha=.2) + 
+    ggtitle("Proportion de la taille de l'interface ancestrale")
+```
+
+```{r boxplots.2}
+ancestral.surface.df %>% 
+    ggplot(aes(y=size, x=protein_type, colour=protein_type)) + 
+    geom_boxplot() +
+    ggtitle("Distribution des tailles relatives selon le type")
+```
+
+```{r antho}
+interface1.tetrameric <- ancestral.surface.df %>% 
+  filter(protein_type == "tetramer") %>% select(size) %>% unlist(use.names = F)
+interface1.dimeric <- ancestral.surface.df %>% 
+  filter(protein_type == "dimer") %>% select(size) %>% unlist(use.names = F)
+t.test(interface1.dimeric, interface1.tetrameric)
+```

@@ -12,6 +12,8 @@ output:
     toc: yes
     toc_depth: 3
     df_print: paged
+bibliography: "references.bib"
+# nocite: '@*'
 ---
 
 ```{r setup, include=FALSE}
@@ -67,6 +69,11 @@ type.counts.ls <- interfaces %>% purrr::map(~ dplyr::count(.x, type))
 type.counts.df <- bind_rows(type.counts.ls, .id = "protein")
 ```
 
+# Titre 1
+
+## sous-titre
+
+### sous-sous-titre
 
 ```{r pooled.counts}
 type.proportions.df <- type.counts.df %>% 
@@ -261,8 +268,7 @@ pca.interfaces <- pca.tbl %>%
 ```
 
 ```{r pam.maybe}
-pca_mod <- prcomp(pca.df)  # compute principal components
-
+pca_mod <- prcomp(pca.df)
 
 pca.var.props <- 
   100 * as.data.frame(summary(pca_mod)$importance)["Proportion of Variance", ]
@@ -277,7 +283,7 @@ df_pc_recent <- df_pc[df_pc$Interface == "recent", ]
 
 # Plot ----------------------------------------------------
 ggplot(df_pc, aes(PC1, PC2, col=Interface)) + 
-  geom_point(aes(shape=Interface), size=2) +   # draw points
+  geom_point(aes(shape=Interface), size=2) + 
   labs(title="Visualisation des clusters par type d'interface", 
        subtitle="par analyse en composants principaux",
        caption="Dim_Tet_interfaces") + 
@@ -359,3 +365,14 @@ print(model)
 ### get ROC
 #res$roc
 ```
+
+\newpage
+# References
+```{r generateBibliography, results="asis", echo=FALSE, warning=FALSE}
+suppressMessages(require("bibtex"))
+suppressMessages(require("knitcitations"))
+cleanbib()
+options("citation_format" = "pandoc")
+read.bibtex(file = "references.bib")
+```
+
