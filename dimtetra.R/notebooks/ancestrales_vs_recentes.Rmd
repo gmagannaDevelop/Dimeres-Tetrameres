@@ -148,6 +148,23 @@ t.test(interface1.dimeric, interface1.tetrameric)
 metrics <- readr::read_csv(here("assets/tetrametic_metrics.csv"))
 ```
 
+```{r separate.annotate.join}
+ancestral.cov.df <- metrics %>% select(contains("interface1"), protein) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "interface1"))) %>% 
+    mutate(interface = "ancestral") %>% select(interface, everything())
+
+recent.cov.df <- metrics %>% select(contains("interface2"), protein) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "interface2"))) %>% 
+    mutate(interface = "recent") %>% select(interface, everything())
+
+annotated.df <- rbind(ancestral.cov.df, recent.cov.df) %>% 
+  mutate(interface = factor(interface)) %>% 
+    rename(size = `relative size`) %>% 
+      select(interface, protein, everything())
+
+annotated.reg.df <- annotated.df %>% select(-protein)
+```
+
 ```{r consurf}
 consurf <- metrics %>% select(starts_with("consurf")) %>% 
   rename(
@@ -168,20 +185,15 @@ consurf %>%
     ggtitle("Score Consurf par type d'interface")
 ```
 
-
-```{r separate.annotate.join}
-ancestral.cov.df <- metrics %>% select(contains("interface1")) %>% 
-  rename_all(~ str_trim(str_remove_all(.x, "interface1"))) %>% 
-    mutate(interface = "ancestral") %>% select(interface, everything())
-
-recent.cov.df <- metrics %>% select(contains("interface2")) %>% 
-  rename_all(~ str_trim(str_remove_all(.x, "interface2"))) %>% 
-    mutate(interface = "recent") %>% select(interface, everything())
-
-annotated.reg.df <- rbind(ancestral.cov.df, recent.cov.df) %>% 
-  mutate(interface = factor(interface)) %>% 
-    rename(size = `relative size`)
+```{r test.consurf}
+consurf.ancestral <- consurf %>% filter(Interface == "ancestral") %>% 
+  select(`Consurf score`) %>% unlist(use.names = F)
+consurf.recent <- consurf %>% filter(Interface == "recent") %>% 
+  select(`Consurf score`) %>% unlist(use.names = F)
+t.test(consurf.recent, consurf.ancestral)
 ```
+
+
 
 `r annotated.reg.df %>% select(-interface) %>%  describe() %>%   knitr::kable()`
 
@@ -191,6 +203,57 @@ annotated.reg.df %>% select(interface, hydrophobic, polar, charged) %>%
     ggplot(aes(x=`AA type`, y=proportion, colour=interface)) +
       geom_boxplot()
 ```
+
+```{r pca.data.frame}
+pca.tbl <- annotated.df %>% 
+  mutate(
+    interface = case_when(
+      interface == "ancestral" ~ "int1",
+      interface == "recent" ~ "int2"
+    )
+  ) %>% tidyr::unite(protein_type, c("protein", "interface"))
+
+pre.pca.df <- pca.tbl %>% select(-protein_type) %>%  as.data.frame()
+row.names(pre.pca.df) <- unlist(pca.tbl$protein_type)
+pca.df <- scale(pre.pca.df)
+
+pca.interfaces <- pca.tbl %>% 
+  mutate(
+    interface = if_else(str_detect(protein_type, "int1"), "ancestral", "recent")
+  ) %>% select(interface) %>% unlist(use.names = F)
+```
+
+```{r pam.maybe}
+pca_mod <- prcomp(pca.df)  # compute principal components
+
+
+pca.var.props <- 
+  100 * as.data.frame(summary(pca_mod)$importance)["Proportion of Variance", ]
+pc1.var <- as.numeric(pca.var.props["PC1"]) %>% round()
+pc2.var <- as.numeric(pca.var.props["PC2"]) %>% round()
+
+
+# Data frame of principal components ----------------------
+df_pc <- data.frame(pca_mod$x, Interface=pca.interfaces)  
+df_pc_ancestral <- df_pc[df_pc$Interface == "ancestral", ] 
+df_pc_recent <- df_pc[df_pc$Interface == "recent", ]  
+
+# Plot ----------------------------------------------------
+ggplot(df_pc, aes(PC1, PC2, col=Interface)) + 
+  geom_point(aes(shape=Interface), size=2) +   # draw points
+  labs(title="Visualisation des clusters par type d'interface", 
+       subtitle="par analyse en composants principaux",
+       caption="Dim_Tet_interfaces") + 
+  coord_cartesian(xlim = 1.2 * c(min(df_pc$PC1), max(df_pc$PC1)), 
+                  ylim = 1.2 * c(min(df_pc$PC2), max(df_pc$PC2))) +
+  ggalt::geom_encircle(data = df_pc_ancestral, aes(x=PC1, y=PC2)) + 
+  ggalt::geom_encircle(data = df_pc_recent, aes(x=PC1, y=PC2)) +
+  labs(
+    x = glue::glue("CP1 (~{pc1.var} %)"),
+    y = glue::glue("CP2 (~{pc2.var} %)")
+  )
+```
+
 
 
 ```{r le.plot, eval=F}
