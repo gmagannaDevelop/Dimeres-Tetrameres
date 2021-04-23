@@ -13,7 +13,7 @@ output:
     toc_depth: 3
     df_print: paged
 bibliography: "references.bib"
-# nocite: '@*'
+nocite: '@*'
 ---
 
 ```{r setup, include=FALSE}
@@ -103,21 +103,23 @@ tetramers <- type.proportions.df %>% filter(protein %in% tetramers.names)
 
 
 ```{r densities.by.type}
-tetramers %>% 
+p1.by_type <- tetramers %>% 
     ggplot(aes(x=size,  colour=type)) + 
       geom_histogram(
         aes(y = after_stat(density)), fill="white",
       ) +
         geom_density(aes(fill = type), alpha=.2) + 
     ggtitle("Distribution des tailles relatives selon le type")
-```
 
-
-```{r histograms.by.type}
-tetramers %>% 
+p2.by_type <- tetramers %>% 
     ggplot(aes(y=size, x=type, colour=type)) + geom_boxplot() +
-    ggtitle("Distribution des tailles relatives selon le type")
+      ggtitle("Distribution des tailles relatives selon le type") +
+        coord_flip()
+
+gridExtra::grid.arrange(p1.by_type, p2.by_type)
 ```
+
+
 
 ```{r ancestral.size}
 ancestral.surface.df <- type.proportions.df %>% filter(type == "ancestral") %>% 
@@ -128,20 +130,24 @@ ancestral.surface.df <- type.proportions.df %>% filter(type == "ancestral") %>%
     )
   ) 
 
-ancestral.surface.df %>% 
+p1.by_conf <- ancestral.surface.df %>% 
   ggplot(aes(x=size,  colour=protein_type)) + 
       geom_histogram(
         aes(y = after_stat(density)), fill="white",
       ) +
         geom_density(aes(fill = protein_type), alpha=.2) + 
     ggtitle("Proportion de la taille de l'interface ancestrale")
+
+p2.by_conf <- ancestral.surface.df %>% 
+    ggplot(aes(y=size, x=protein_type, colour=protein_type)) + 
+    geom_boxplot() +
+    ggtitle("Distribution des tailles relatives selon le type") +
+    coord_flip()
+
+gridExtra::grid.arrange(p1.by_conf, p2.by_conf)
 ```
 
 ```{r boxplots.2}
-ancestral.surface.df %>% 
-    ggplot(aes(y=size, x=protein_type, colour=protein_type)) + 
-    geom_boxplot() +
-    ggtitle("Distribution des tailles relatives selon le type")
 ```
 
 ```{r antho}
