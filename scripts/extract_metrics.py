@@ -181,26 +181,41 @@ lists = {
     i: eval(i) for i in dir() if isinstance(eval(i), list) and not i.startswith("_")
 }
 
-metrics: pd.DataFrame = pd.DataFrame(
-    {
-        "SASA total": SASA_total,
-        "SASA interface1": SASA_interface1,
-        "SASA interface2": SASA_interface2,
-        "consurf interface1": mean_consurf_interface1,
-        "consurf interface2": mean_consurf_interface2,
-        "relative size not interface": prop_not_interface,
-        "relative size interface1": prop_interface1,
-        "relative size interface2": prop_interface2,
-        "surface hydrophobic": surface_HP,
-        "surface polar": surface_POL,
-        "surface charged": surface_CHG,
-        "interface1 hydrophobic": interface1_HP,
-        "interface1 polar": interface1_POL,
-        "interface1 charged": interface1_CHG,
-        "interface2 hydrophobic": interface2_HP,
-        "interface2 polar": interface2_POL,
-        "interface2 charged": interface2_CHG,
-    },
-    index=tetramer_names,
-)
-metrics.index.name = "protein"
+flatten_nested_aa_lists = lambda aa_list, name: {
+    f"{name} count {aa.all[i]}": [aa_list[j][i] for j in range(len(aa_list))]
+    for i in range(len(aa.all))
+}
+
+aa_surface = flatten_nested_aa_lists(aa_counts_surface, "surface")
+aa_interface1 = flatten_nested_aa_lists(aa_counts_interface1, "interface1")
+aa_interface2 = flatten_nested_aa_lists(aa_counts_interface2, "interface2")
+
+aa_occurrences = {}
+aa_occurrences.update(aa_surface)
+aa_occurrences.update(aa_interface1)
+aa_occurrences.update(aa_interface2)
+
+metrics_dict = {
+    "SASA total": SASA_total,
+    "SASA interface1": SASA_interface1,
+    "SASA interface2": SASA_interface2,
+    "consurf interface1": mean_consurf_interface1,
+    "consurf interface2": mean_consurf_interface2,
+    "relative size not interface": prop_not_interface,
+    "relative size interface1": prop_interface1,
+    "relative size interface2": prop_interface2,
+    "surface hydrophobic": surface_HP,
+    "surface polar": surface_POL,
+    "surface charged": surface_CHG,
+    "interface1 hydrophobic": interface1_HP,
+    "interface1 polar": interface1_POL,
+    "interface1 charged": interface1_CHG,
+    "interface2 hydrophobic": interface2_HP,
+    "interface2 polar": interface2_POL,
+    "interface2 charged": interface2_CHG,
+}
+
+metrics_dict.update(aa_occurrences)
+
+metrics_df: pd.DataFrame = pd.DataFrame(metrics_dict, index=tetramer_names)
+metrics_df.index.name = "protein"
