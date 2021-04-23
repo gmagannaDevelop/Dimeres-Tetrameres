@@ -69,6 +69,37 @@ type.counts.ls <- interfaces %>% purrr::map(~ dplyr::count(.x, type))
 type.counts.df <- bind_rows(type.counts.ls, .id = "protein")
 ```
 
+```{r newdata}
+metrics <- readr::read_csv(here("assets/tetramer_metrics_corrected.csv"))
+full.metrics <- readr::read_csv(here("assets/full_tetramer_metrics.csv"))
+```
+
+```{r nieuw.props}
+new.props <- metrics %>% select(contains("relative size")) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "relative size"))) %>% 
+    rename(core = `not interface`) %>% 
+      reshape2::melt() %>% 
+        rename(type = variable, size = value)
+```
+
+```{r densities.by.type}
+p1.by_type <- new.props %>% 
+    ggplot(aes(x=size,  colour=type)) + 
+      geom_histogram(
+        aes(y = after_stat(density)), fill="white",
+      ) +
+        geom_density(aes(fill = type), alpha=.2) + 
+    ggtitle("Distribution des tailles relatives selon le type")
+
+p2.by_type <- new.props %>% 
+    ggplot(aes(y=size, x=type, colour=type)) + geom_boxplot() +
+      ggtitle("Distribution des tailles relatives selon le type") +
+        coord_flip() +
+          theme(axis.text.y = element_text(angle = 45, hjust = 1))
+
+gridExtra::grid.arrange(p1.by_type, p2.by_type)
+```
+
 # Titre 1
 
 ## sous-titre
@@ -102,7 +133,7 @@ tetramers <- type.proportions.df %>% filter(protein %in% tetramers.names)
 ```
 
 
-```{r densities.by.type}
+```{r densities.by.type.oud, eval=F}
 p1.by_type <- tetramers %>% 
     ggplot(aes(x=size,  colour=type)) + 
       geom_histogram(
@@ -159,10 +190,6 @@ interface1.dimeric <- ancestral.surface.df %>%
 t.test(interface1.dimeric, interface1.tetrameric, paired = T)
 ```
 
-```{r newdata}
-metrics <- readr::read_csv(here("assets/tetrametic_metrics.csv"))
-full.metrics <- readr::read_csv(here("assets/full_tetramer_metrics.csv"))
-```
 
 ```{r aa.anal}
 aa.counts.tbl <- full.metrics %>% select(contains("count"), protein) %>% 
