@@ -151,6 +151,39 @@ metrics <- readr::read_csv(here("assets/tetrametic_metrics.csv"))
 full.metrics <- readr::read_csv(here("assets/full_tetramer_metrics.csv"))
 ```
 
+```{r aa.anal}
+aa.counts.tbl <- full.metrics %>% select(contains("count"), protein) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "count "))) 
+
+aa.ancestral <- aa.counts.tbl %>% select(contains("interface1"), protein) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "interface1"))) %>% 
+    mutate(type = "ancestral interface") %>% select(type, everything())
+
+aa.recent <- aa.counts.tbl %>% select(contains("interface2"), protein) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "interface2"))) %>% 
+    mutate(type = "recent interface") %>% select(type, everything())
+
+aa.surface <- aa.counts.tbl %>% select(contains("surface"), protein) %>% 
+  rename_all(~ str_trim(str_remove_all(.x, "surface"))) %>% 
+    mutate(type = "surface") %>% select(type, everything())
+
+aa.tbl <- rbind(aa.ancestral, aa.recent, aa.surface) %>% 
+  mutate(type = factor(type)) %>% 
+      select(type, protein, everything())
+```
+
+```{r aa.comp.vis}
+aa.tbl %>% select(-protein) %>% melt() %>% 
+  rename(AA = variable, counts = value) %>% 
+  ggplot() +
+    geom_col(
+      mapping = aes(x = AA, fill = type, y=counts),
+      position = "dodge"
+    ) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ggtitle("Nombre d'occurrences des acides aminés")
+```
+
+
 ```{r separate.annotate.join}
 ancestral.cov.df <- metrics %>% select(contains("interface1"), protein) %>% 
   rename_all(~ str_trim(str_remove_all(.x, "interface1"))) %>% 
