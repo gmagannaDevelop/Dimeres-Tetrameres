@@ -71,6 +71,7 @@ for iii, tetramere in enumerate(tetramer_names):
             len(dSASA["notInterfaceRes"]),
             len(dSASA["interfaceRes1"]),
             len(dSASA["interfaceRes2"]),
+            len(dSASA["surfaceRes"]),
         ]
     )
     list_taille_SASA.append(
@@ -169,9 +170,13 @@ surface_CHG = CHG_surface = [i[6] for i in list_frequence_types]
 interface1_CHG = CHG_interface1 = [i[7] for i in list_frequence_types]
 interface2_CHG = CHG_interface2 = [i[8] for i in list_frequence_types]
 
+for ls in list_taille_nombre_residus:
+    ls[1] -= ls[-1]
+
 prop_not_interface = [i[1] / i[0] for i in list_taille_nombre_residus]
 prop_interface1 = [i[2] / i[0] for i in list_taille_nombre_residus]
 prop_interface2 = [i[3] / i[0] for i in list_taille_nombre_residus]
+prop_surface = [i[4] / i[0] for i in list_taille_nombre_residus]
 
 SASA_total = [sasas[0] for sasas in list_taille_SASA]
 SASA_interface1 = [sasas[1] for sasas in list_taille_SASA]
@@ -204,6 +209,7 @@ metrics_dict = {
     "relative size not interface": prop_not_interface,
     "relative size interface1": prop_interface1,
     "relative size interface2": prop_interface2,
+    "relative size surface": prop_surface,
     "surface hydrophobic": surface_HP,
     "surface polar": surface_POL,
     "surface charged": surface_CHG,
