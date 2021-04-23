@@ -1,5 +1,6 @@
 import pandas as pd
 
+from functools import reduce
 from dimertetramer.parsing.pdb import PDB_parser, pdb_to_csv
 from dimertetramer.utils.customobjs import Path as path, ObjDict as odict
 from dimertetramer.calculations import misc as PDBTools
@@ -44,10 +45,14 @@ dimers = assets["Dimers"].dglob("*.pdb")
 tetramers = assets["Tetramers"].dglob("*.pdb")
 interfaces = assets["Dim_Tet_interfaces"].dglob("*.pdb")
 
-for tetramere in tetramer_names:
+aa_counts_interface1 = []
+aa_counts_interface2 = []
+aa_counts_surface = []
+
+for iii, tetramere in enumerate(tetramer_names):
 
     tetramer_file = f"../assets/Dim_Tet_interfaces/{tetramere}_inter.pdb"
-    print(tetramere)
+    print(iii, tetramere)
     dSASA = PDBTools.SASA_parser(tetramer_file)
 
     consurf_file = f"../assets/Consurf/{tetramere}_Tet_pdb_With_Conservation_Scores.pdb"
@@ -82,29 +87,47 @@ for tetramere in tetramer_names:
     CHG_interface1 = 0
     CHG_interface2 = 0
 
+    _aa_surface = [0] * len(aa.all)
     for residue in dSASA["surfaceRes"]:
-        if dSASA[residue]["resname"] in aa.hydrophobic:
+        _resname = dSASA[residue]["resname"]
+        _j = aa.all.index(_resname)
+        _aa_surface[_j] += 1
+
+        if _resname in aa.hydrophobic:
             HP_surface += 1
-        elif dSASA[residue]["resname"] in aa.polar:
+        elif _resname in aa.polar:
             POL_surface += 1
-        elif dSASA[residue]["resname"] in aa.charged:
+        elif _resname in aa.charged:
             CHG_surface += 1
+    aa_counts_surface.append(_aa_surface)
 
+    _aa_interface1 = [0] * len(aa.all)
     for residue in dSASA["interfaceRes1"]:
-        if dSASA[residue]["resname"] in aa.hydrophobic:
-            HP_interface1 += 1
-        elif dSASA[residue]["resname"] in aa.polar:
-            POL_interface1 += 1
-        elif dSASA[residue]["resname"] in aa.charged:
-            CHG_interface1 += 1
+        _resname = dSASA[residue]["resname"]
+        _j = aa.all.index(_resname)
+        _aa_interface1[_j] += 1
 
+        if _resname in aa.hydrophobic:
+            HP_interface1 += 1
+        elif _resname in aa.polar:
+            POL_interface1 += 1
+        elif _resname in aa.charged:
+            CHG_interface1 += 1
+    aa_counts_interface1.append(_aa_interface1)
+
+    _aa_interface2 = [0] * len(aa.all)
     for residue in dSASA["interfaceRes2"]:
-        if dSASA[residue]["resname"] in aa.hydrophobic:
+        _resname = dSASA[residue]["resname"]
+        _j = aa.all.index(_resname)
+        _aa_interface2[_j] += 1
+
+        if _resname in aa.hydrophobic:
             HP_interface2 += 1
-        elif dSASA[residue]["resname"] in aa.polar:
+        elif _resname in aa.polar:
             POL_interface2 += 1
-        elif dSASA[residue]["resname"] in aa.charged:
+        elif _resname in aa.charged:
             CHG_interface2 += 1
+    aa_counts_interface2.append(_aa_interface2)
 
     list_frequence_types.append(
         [
