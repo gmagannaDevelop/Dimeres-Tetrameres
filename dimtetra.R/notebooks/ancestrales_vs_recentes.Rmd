@@ -82,6 +82,14 @@ new.props <- metrics %>% select(contains("relative size")) %>%
         rename(type = variable, size = value)
 ```
 
+\newpage
+# Titre 1
+
+## sous-titre
+
+### sous-sous-titre
+
+
 ```{r densities.by.type}
 p1.by_type <- new.props %>% 
     ggplot(aes(x=size,  colour=type)) + 
@@ -99,12 +107,6 @@ p2.by_type <- new.props %>%
 
 gridExtra::grid.arrange(p1.by_type, p2.by_type)
 ```
-
-# Titre 1
-
-## sous-titre
-
-### sous-sous-titre
 
 ```{r pooled.counts}
 type.proportions.df <- type.counts.df %>% 
