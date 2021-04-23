@@ -19,6 +19,7 @@ here::i_am("notebooks/ancestrales_vs_recentes.Rmd")
 library(here)
 library(foreach)
 library(parallel)
+library(doRNG)
 library(iterators)
 library(ggplot2)
 library(dplyr)
@@ -147,6 +148,7 @@ t.test(interface1.dimeric, interface1.tetrameric, paired = T)
 
 ```{r newdata}
 metrics <- readr::read_csv(here("assets/tetrametic_metrics.csv"))
+full.metrics <- readr::read_csv(here("assets/full_tetramer_metrics.csv"))
 ```
 
 ```{r separate.annotate.join}
