@@ -83,11 +83,67 @@ new.props <- metrics %>% select(contains("relative size")) %>%
 ```
 
 \newpage
-# Titre 1
+# Contexte
 
-## sous-titre
+Au cours de ce projet, nous nous sommes intéressés à la comparaison de quarante-deux protéines provenant de différentes origines, homologue deux à deux, et dont le couplage se fait chaque fois entre un homodimère et un homotétramère. 
+L'étude de ces couplages a pour objectif de mieux comprendre les mécanismes évolutifs amenant à l'apparition d'homotétramères à partir de simple monomères. 
+Un homomère est une protéine complexe formée de plusieurs sous-unités identiques (des copies) liées les unes aux autres au niveau d'interfaces où le potentiel d'affinité est suffisant. 
+Plus un homomère possède de sous-unités, plus il devra posséder également d'interfaces supplémentaires et donc de types d'interfaces. 
+Ainsi, un homodimère ne possédera qu'une seule interface, tandis qu'un homotétramère possédera deux types d'interfaces et quatre interfaces au total. 
+	
+Dans le cas d'un homotétramère, le modèle évolutif le plus parcimonieux considère qu'un type d'interface est apparue en premier (formation d'un homodimère), et qu'un second type d'interface apparue plus tard a ensuite permis à deux homodimères de former un homotétramère. 
+Ce modèle hypothétique suppose biologiquement des caractéristiques particulières et différentes entre les interfaces dites "ancestrales" (supposément apparues avant à et celles dites "récentes" (apparues après). 
+Dans ce projet, nous nous proposons ainsi d'analyser les caractéristiques des protéines sélectionnées pour l'étude et de déterminer celles qui pourraient potentiellement être considérées comme facteurs de l'apparition d'homodimères et d'homotétramères. 
 
-### sous-sous-titre
+Les différentes caractéristiques vont notamment pouvoir considérer la taille des interfaces, la composition en acides aminés et plus particulièrement les taux en hydrophobicité, en acide aminés chargés et polaires. 
+Le Serveur Consurf permettra également d'estimer la conservation évolutive de positions d'acides aminés dans une molécule de protéine au regard des relations phylogénétiques entre séquences homologues.
+L'indice de conservation permet de discuter de l'importance de la séquence pour la protéine, ce qui pourra être comparé entre les deux types d'interfaces.
+
+# Matériel et Méthode
+	
+Nos analyses ont été réalisés avec les langages informatiques R et Python. 
+Les données utilisées considèrent un jeu composé des fichiers PDBs de 
+vingt-et-un couples d'homomères homologues constitués respectivement 
+d'un dimère et d'un tétramère. 
+Ces fichiers ont également été annotés pour pouvoir mettre en évidence 
+les interfaces ancestrales, en commun entre les dimères et les tétramères, et 
+les interfaces récentes, spécifiques aux tétramères. 
+Ces différents types ont été notés sous l'appellation _"bfactor"_.
+
+# Traitement des données sous R et sous Python
+
+Nous avons créé un répertoire sur GitHub où l'intégralité des scripts utilisés qui
+peuvent être consultés [**en cliquant ici**](https://github.com/gmagannaDevelop/Dimeres-Tetrameres).
+Il s'agit d'un ensemble de scripts Python organisés sous la forme d'un module
+qui peut être installé grâce à l'outil de développement Python [`poetry`](https://python-poetry.org/).
+Ce module contient différents outils de manipulation de fichiers PDB, contenant
+des fonctions développées au préalable par la Maître de conférence Anne Lopes, 
+auxquelles nous avons ajouté les fonctions issues des discussions avec nos 
+collègues de classe et celles que nous avons créées spécifiquement pour ce projet.
+
+En Python une analyse itérative sur toutes les molécules du dossier 
+`Dim_Tet_interfaces`, dans laquelle nous avons extrait les paramètres
+abordés dans la discussion des résultats. Une fois que nous avons 
+obtenu les caractéristiques structurales d'intérêt, nous avons réalisé 
+l'analyse des données sur R en utilisant las fonctions de la librairie 
+`tidyverse`.
+
+\newpage
+# Résultats
+
+## Distribution des tailles relatives selon le type (analyse sur les tétramères)
+
+Il est à noter que seuls les homotétramères ont été utilisés pour cette comparaison
+pour ne pas biaiser les résultats. 
+Il peut être remarqué que les tendances sont sensiblement similaires en fonction 
+du type observé. 
+Le pourcentage en surface normale (type 0) se situe entre 50 et 90 % de la 
+surface totale de la protéine avec un maximum à 76 %.
+Ensuite, le pourcentage en interface récente (type 2) se retrouve plutôt entre 
+2 et 20 % avec un maximum à 12 %. 
+Finalement, le pourcentage en interfaces ancestrales (type 1) se situe dans une 
+case un peu plus diversifiée, entre 2 et 42 %, chevauchant ainsi 
+les tailles retrouvées pour les interfaces récentes. 
 
 
 ```{r densities.by.type}
@@ -152,6 +208,22 @@ p2.by_type <- tetramers %>%
 gridExtra::grid.arrange(p1.by_type, p2.by_type)
 ```
 
+\newpage
+## Proportion de la taille de l'interface ancestrale
+
+Les résultats de cette analyse montrent un manque de disparité entre les distributions.
+En effet, les courbes représentant les deux types d'interfaces se chevauchent 
+sans faire montre d'une grande différence. 
+Il serait difficile de comparer avec le type non-interface qui prend en compte, 
+en plus de la surface, les parties internes des protéines. 
+Les tailles des interfaces ancestrales semblent ainsi relativement similaires 
+aux tailles des interfaces récentes. 
+Si nous n'avons pas eu le temps de réaliser cette analyse, il aurait tout de 
+même été plus intéressant de comparer protéine par protéine les différences 
+de tailles. Pour autant, cette présente analyse semble indiquer une absence 
+de différence tangible entre les tailles. Nous noterons malgré tout une légère 
+augmentation de la taille pour le type ancestral, dont le pic se positionne à 
+20 % par rapport à un pic de 13 % pour le type récent.
 
 
 ```{r ancestral.size}
@@ -180,8 +252,6 @@ p2.by_conf <- ancestral.surface.df %>%
 gridExtra::grid.arrange(p1.by_conf, p2.by_conf)
 ```
 
-```{r boxplots.2}
-```
 
 ```{r antho}
 interface1.tetrameric <- ancestral.surface.df %>% 
@@ -214,17 +284,44 @@ aa.tbl <- rbind(aa.ancestral, aa.recent, aa.surface) %>%
       select(type, protein, everything())
 ```
 
+
+## Composition en acides aminés en fonction du type (analyse sur les tétramères)
+
 ```{r aa.comp.vis}
 aa.tbl %>% select(-protein) %>% reshape2::melt() %>% 
   rename(AA = variable, counts = value) %>% 
   ggplot() +
     geom_col(
       mapping = aes(x = AA, fill = type, y=counts),
-      position = "dodge"
+      position = "dodge", width=0.85
     ) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   ggtitle("Nombre d'occurrences des acides aminés")
 ```
 
+
+
+Cette analyse — qui rejoint celle portée sur la composition en acides aminés 
+chargés, hydrophobes et polaires — a pour objectif de distinguer les différences
+de composition de l'ensemble des acides aminés entre les trois types de surface étudiées. 
+	
+Ce qui est intéressant en premier lieu de remarquer réside dans la démarcation entre les interfaces et la surface de la protéine sur une grande partie des acides aminés. 
+C'est le cas notamment de l'aspartate, du glutamate, du glutamate, de la lysine et de l'arginine, fortement présents dans la surface. 
+A l'inverse, sa composition en methionine et en cystéine est relativement faible. 
+	
+De l'autre côté, si les compositions entre les deux types d'interfaces sont 
+globalement assez similaires, celles de l'interface ancestrale montre des 
+similitudes avec celles de surface à plusieurs reprises. 
+C'est le cas pour l'alanine, la glutamine, l'asparagine, et la valine. 
+De plus, l'interface ancestrale présente certaines caractéristiques originales,
+telle qu'une forte proportion en cystéine, phénylalanine, leucine, de 
+méthionine et tyrosine. 
+Tous ces acides aminés sont apolaires et donc relativement hydrophobes. 
+De plus, la cystéine peut être amené à créer des ponts salins pouvant avoir un 
+rôle dans l'augmentation de l'affinité au sein d'un complexe. 
+Ces différences de compositions démarquent ainsi fortement les interfaces de la 
+surface, mais montrent également une hydrophobicité plus prononcé pour les 
+interfaces ancestrales, ce qui pourrait amener à supposer que l'interface 
+primaire possède généralement une plus forte affinité au sein du complexe que l'interface secondaire. 
 
 ```{r separate.annotate.join}
 ancestral.cov.df <- metrics %>% select(contains("interface1"), protein) %>% 
@@ -240,8 +337,11 @@ annotated.df <- rbind(ancestral.cov.df, recent.cov.df) %>%
     rename(size = `relative size`) %>% 
       select(interface, protein, everything())
 
-annotated.reg.df <- annotated.df %>% select(-protein)
+annotated.reg.df <- annotated.df %>% 
+  select(-protein, -contains("count"))
 ```
+
+## Comparaison des scores ConSurf entre les interfaces récentes et ancestrales (analyse sur les tétramères)
 
 ```{r consurf}
 consurf <- metrics %>% select(starts_with("consurf")) %>% 
@@ -263,6 +363,7 @@ consurf %>%
     ggtitle("Score Consurf par type d'interface")
 ```
 
+
 ```{r test.consurf}
 consurf.ancestral <- consurf %>% filter(Interface == "ancestral") %>% 
   select(`Consurf score`) %>% unlist(use.names = F)
@@ -272,16 +373,27 @@ consurf.recent <- consurf %>% filter(Interface == "recent") %>%
 t.test(consurf.recent, consurf.ancestral, paired = T)
 ```
 
+L'analyse des scores ConSurf s'est avéré être la plus intéressante à observer dans cette étude. 
+En effet, il peut être remarqué que les résidus appartenant à l'interface ancestrale sont dans l'ensemble mieux conservés que les résidus provenant de l'interface récente. 
+Cela signifie que la structure de l'interface ancestrale est fondamentale pour l'intégrité de la protéine et ne peut se permettre de modifications. 
+Cela signifie également que l'interface plus récente est plus laxiste sur sa structure et est amené à être modifiée plus fréquemment, ou n'a pas besoin d'une structure très précise pour exister et permettre le couplage des dimères en tétramères. 
 
 
-`r annotated.reg.df %>% select(-interface) %>%  describe() %>%   knitr::kable()`
+
+## Composition en acides aminés polaires, chargés et hydrophobes entre les interfaces récentes et ancestrales (analyse sur les tétramères)
 
 ```{r aa.composition}
+# `r annotated.reg.df %>% select(-interface) %>%  describe() %>%   knitr::kable()`
 annotated.reg.df %>% select(interface, hydrophobic, polar, charged) %>% 
   reshape2::melt() %>% rename(`AA type` = variable, proportion = value) %>% 
     ggplot(aes(x=`AA type`, y=proportion, colour=interface)) +
       geom_boxplot()
 ```
+
+
+Cette figure cherche à comparer les compositions des deux types d'interfaces observées. 
+Comme déjà discuté à la figure 4, le type ancestral tend à avoir une proportion plus grande en acides aminés hydrophobes, et donc plus faible en acides aminés chargés et polaires. 
+Cependant, les résultats se chevauchent pour chaque type d'acide aminé et il serait difficile de conclure sans soumettre cette analyse à une vérification statistique. (voir figure 7)
 
 ```{r pca.data.frame}
 pca.tbl <- annotated.df %>% 
@@ -292,7 +404,7 @@ pca.tbl <- annotated.df %>%
     )
   ) %>% tidyr::unite(protein_type, c("protein", "interface"))
 
-pre.pca.df <- pca.tbl %>% select(-protein_type) %>%  as.data.frame()
+pre.pca.df <- pca.tbl %>% select(-protein_type, -contains("count")) %>%  as.data.frame()
 row.names(pre.pca.df) <- unlist(pca.tbl$protein_type)
 pca.df <- scale(pre.pca.df)
 
@@ -301,6 +413,8 @@ pca.interfaces <- pca.tbl %>%
     interface = if_else(str_detect(protein_type, "int1"), "ancestral", "recent")
   ) %>% select(interface) %>% unlist(use.names = F)
 ```
+
+# Visualisation par ACP et Régression Logistique
 
 ```{r pam.maybe}
 pca_mod <- prcomp(pca.df)
@@ -341,8 +455,22 @@ GGally::ggpairs(annotated.reg.df, aes(colour=interface))
 ```{r regression}
 # regression naive
 m1.glm <- glm(interface ~ ., data = annotated.reg.df, family = binomial)
-summary(m1.glm)
+#summary(m1.glm)
+m1.coefs.df <- summary(m1.glm) %>% coefficients() %>% as.data.frame()
+m1.coefs.tbl <- 
+  cbind(m1.coefs.df, data.frame(Coefficient=rownames(m1.coefs.df))) %>%
+  tibble::tibble() %>% 
+  select(Coefficient, everything())
+
 ```
+
+`r m1.coefs.tbl %>% knitr::kable(caption = "Coefficients de la regression logistique")`
+
+Finalement, nous avons fait une régression logistique afin de vérifier si malgré les similarités trouvées entre les caractéristiques potentiellement déterminantes, il était possible d’utiliser les valeurs de SASA, Score Consurf, Taille relative de l’interface et les proportions d’acides aminés hydrophobes, polaires et chargés, afin de prédire la classe de la surface en question : Ancestrale ou récente. Nous avons aussi fait une validation croisée à 5 plis, afin d’obtenir une meilleure estimation des performances de notre modèle. Malgré la basse significativité de la plupart des variables explicatives, on obtient une courbe ROC qui montre que le modèle possède une bonne capacité de prédiction.
+
+Cette dernière analyse résume assez bien les précédentes, tout en apportant de nouvelles informations intéressantes. Comme il peut être observé, le calcul de la SASA ne montre aucune différence significative entre les deux types d'interfaces. Cette observation peut également être faite pour les compositions en acides aminés hydrophobes, chargés et polaires. Seules des tendances non-significatives ont ainsi pu être discutées jusque-là, à l'exception du score ConSurf qui démontre cependant une différence dans la conservation des deux types d'interfaces. Même si la _z-valeur_ du
+coefficient lié aux tailles des interfaces est au-dessus du seuil établi $\alpha = 0,05$, 
+on espécule qu'il est important pour la prédiction.
 
 ```{r k.fold.explore, eval=F, echo=F, include=F}
 # verify if folds are correctly balanced.
@@ -357,12 +485,12 @@ annotated.reg.df %>% mutate(i = 1:n()) %>%
 ```
 
 
-```{r regression.cv}
+```{r regression.cv, echo=F}
 
 # define training control
 train_control <- trainControl(
   method = "cv", 
-  number = 3,
+  number = 5,
   classProbs = T,
   savePredictions = T,
   summaryFunction = twoClassSummary
@@ -392,16 +520,31 @@ model3 <- train(
 
 
 ## print cv scores
-print(model)
+#print(model)
 #
 #
-#res <- evalm(model)
+res <- evalm(model, silent = T, showplots = F)
+#res$roc
 #
 ### get ROC
 #res$roc
 ```
 
-\newpage
+```{r final.plot}
+res$roc
+```
+
+
+# Conclusion
+
+Les différentes analyses faites sur le jeu de données utilisées n'ont pas permis de mettre en évidence plusieurs facteurs à même de différencier les deux types d'interfaces. 
+Si la taille plus importante et la proportion plus forte en acides aminés hydrophobes semble distinguer l'interface de type ancestrale du type récent, les outils statistiques n'ont pas permis de le confirmer. Au final, le seul facteur confirmé statistiquement correspond au score ConSurf, qui corrobore que la protéine ne peut se passer de la structure de l'interface ancestrale, mais est moins stricte sur celle de l'interface récente. 
+Cela implique notamment que le type ancestral est fondamental pour la protéine, et tend à suggérer qu'elle est apparue en premier et est indispensable pour permettre à une autre interface d'émerger.
+
+Pour aller plus loin, il aurait été intéressant de reproduire l'analyse sur la comparaison des tailles d'interface ancestrale entre dimère et tétramère, en comparant cette fois l'interface récente du tétramère avec la région correspondante au sein de la séquence du dimère afin d'observer les différences évolutives, de voir si une affinité était déjà faiblement présente et possible (score d'affinité et calcul du SASA). 
+En effet, vu la faible conservation de la région correspondant à l'interface récente, il se peut que seulement quelques mutations est permis son apparition. 
+
+
 # References
 ```{r generateBibliography, results="asis", echo=FALSE, warning=FALSE}
 suppressMessages(require("bibtex"))
